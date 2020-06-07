@@ -1,5 +1,6 @@
 ﻿using System;
 using Either;
+using Cipher.IO;
 using Cipher.Interface;
 using Cipher.Common.Model;
 
@@ -41,10 +42,10 @@ namespace Cipher.Command
 			switch (command)
 			{
 				case "encode":
-					Console.WriteLine($"Encoded Value: {storage.Values.Encoded}");
+					Printer.Print($"Encoded Value: {storage.Values.Encoded}");
 					break;
 				case "decode":
-					Console.WriteLine($"Encoded Value: {storage.Values.Decoded}");
+					Printer.Print($"Encoded Value: {storage.Values.Decoded}");
 					break;
 				default: return;
 			}

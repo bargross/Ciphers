@@ -8,7 +8,7 @@ namespace Cipher.Ciphers.Atbash
     public class AtbashCipher: ISimpleCipher
     {
         private IWordMapper _wordMapper;
-        StringBuilder _wordbuilder;
+        private StringBuilder _wordbuilder;
 
         public AtbashCipher()
         {

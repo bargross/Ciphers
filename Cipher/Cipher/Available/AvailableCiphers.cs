@@ -26,9 +26,10 @@ namespace Cipher.Command
 
         public static List<string> CipherAvailableType = new List<string>
         {
-            "Ceasar",
-            "Atbash",
-            "Affine"
+            "ceasar",
+            "atbash",
+            "affine",
+            "rot13"
         };
 
         public static Either<ISimpleCipher, IComplexCipher> GetCipher(string cipherKeyName, AffineKeys keys = null)

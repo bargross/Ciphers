@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipher.Common.Extensions
 {
     public static class ListExtension
     {
-        public static IEnumerable<T> Backwards<T>( this IList<T> list)
+        public static IEnumerable<T> Backwards<T>(this IEnumerable<T> list)
         {
-            for (int x = list.Count; --x >= 0;)
+            for (var x = list.Count(); --x >= 0;)
             {
-                yield return list[x];
+                yield return list.ElementAt(x);
             }
         }
     }

@@ -1,19 +1,19 @@
-﻿using Cipher.Command.Util;
-using Cipher.Common.Model;
-using Cipher.Common.Number;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using Cipher.IO;
+using Cipher.Common.Model;
+using Cipher.Common.Number;
+using Cipher.Splitter;
 
 namespace Cipher.Command
 {
     public static class CLICommandMessageGenerator
     {
-        private static MessageContainer _messageContainer = new MessageContainer();
-        private static OddNumberGenerator _oddNumberGenerator = new OddNumberGenerator();
+        private static IOddNumberGenerator _oddNumberGenerator = new OddNumberGenerator();
 
-        internal static List<string> _excluded = new List<string>
+        internal static IEnumerable<string> _excluded = new[]
         {
             "exit",
             "decode"
@@ -21,10 +21,10 @@ namespace Cipher.Command
 
         public static bool IsNotExcluded(string command) => !_excluded.Contains(command);
 
-        private static string InitialMessage()
+        private static string Start()
         {
-            var initialMessageContainer = _messageContainer.GetMessagesFor("start");
-            var initialMessage = initialMessageContainer[0];
+            var initialMessageContainer = MessageContainer.GetMessagesFor("start");
+            var initialMessage = initialMessageContainer.ElementAt(0);
 
             var builder = new StringBuilder(initialMessage);
             var index = 0;
@@ -34,44 +34,52 @@ namespace Cipher.Command
                 builder.Append($"{index++} - {availableCipher}");
             }
 
-            Console.WriteLine(builder.ToString());
-            var chosenCipher = int.Parse(Console.ReadLine());
+            Printer.Print(builder.ToString());
+
+            var chosenCipher = Reader.Read<int>();
 
             return AvailableCiphers.CipherAvailableType[chosenCipher];
         }
 
         public static Storage ConstructMessage(string key = null, Storage storage = null)
         {
+            Storage currentStorage = null;
             if(key == null && storage == null)
             {
-                key = InitialMessage();
-            
-                storage = new Storage
+                key = Start();
+
+                currentStorage = new Storage
                 {
-                    ChosenCipher = key
+                    ChosenCipher = key,
+                    Values = new Encrypted(),
+                    AffineKeys = new Common.Model.Keys.AffineKeys()
                 };
+            } 
+            else
+            {
+                currentStorage = storage;
             }
 
-            var messages = _messageContainer.GetMessagesFor(key);
+            var messages = MessageContainer.GetMessagesFor(key);
 
             switch(key)
             {
                 case "affine":
-                    GetInputForAffineCipher(messages, storage);
-                    GetInputFor(storage);
+                    GetInputForAffineCipher(messages, currentStorage);
+                    GetInputFor(currentStorage);
                     break;
                 default:
-                    GetInputFor(storage);
+                    GetInputFor(currentStorage);
                     break;
             }
 
-            return storage;
+            return currentStorage;
         }
 
         private static void GetInputFor(Storage storage)
         {
-            var input = Console.ReadLine();
-            (string command, string words) = Splitter.GetCommandAndWords(input);
+            var commandsAndWords = Reader.Read<string>();
+            (string command, string words) = LineSplitter.GetCommandAndWords(commandsAndWords);
 
             if(IsNotExcluded(command))
             {
@@ -79,29 +87,34 @@ namespace Cipher.Command
             }
         }
 
-        private static void GetInputForAffineCipher(List<string> messages, Storage storage)
+        private static void GetInputForAffineCipher(IEnumerable<string> messages, Storage storage)
         {
-            Console.WriteLine(messages[0]);
-            Console.WriteLine(Environment.NewLine);
+            Printer.Print(messages.ElementAt(0));
 
-            var oddKeysAllowed = _oddNumberGenerator.GetNumbersBetween(0, 25);
-            Console.WriteLine(oddKeysAllowed.ToString());
-
-            var initialInput = Console.ReadLine();
-            var oddKey = int.Parse(initialInput);
-
-            if (oddKeysAllowed.Contains(oddKey))
+            var oddNumberSequence = _oddNumberGenerator.GetNumbersBetween(0, 25);
+            var builder = new StringBuilder();
+            foreach(var number in oddNumberSequence)
             {
-                storage.AffineKeys.KeyOne = oddKey;
+                builder.Append($"{number} ");
             }
 
-            Console.WriteLine(messages[1]);
-            var randKey = int.Parse(Console.ReadLine());
-            Console.WriteLine(Environment.NewLine);
+            Printer.Print(builder.ToString());
 
-            if (randKey >= 0 && randKey <= 25)
+            var oddKey = Reader.Read<int>();
+            if(NumberValidator.IsOdd(oddKey))
             {
-                storage.AffineKeys.KeyTwo = randKey;
+                if (oddNumberSequence.Contains(oddKey))
+                {
+                    storage.AffineKeys.KeyOne = oddKey;
+                }
+
+                Printer.Print(messages.ElementAt(1));
+
+                var randKey = Reader.Read<int>();
+                if (randKey >= 0 && randKey <= 25)
+                {
+                    storage.AffineKeys.KeyTwo = randKey;
+                }
             }
         }
     }

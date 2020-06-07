@@ -8,8 +8,8 @@ namespace Cipher.Ciphers.Atbash.Dictionary
 {
     public class CharDictionary: ICharDictionary
     {
-        private Dictionary<char, char> _upperCaseLettersDictionary;
-        private Dictionary<char, char> _lowerCaseLettersDictionary;
+        private IDictionary<char, char> _upperCaseLettersDictionary;
+        private IDictionary<char, char> _lowerCaseLettersDictionary;
 
         public CharDictionary(List<char> upperCase, List<char> lowerCase)
         {
@@ -20,9 +20,9 @@ namespace Cipher.Ciphers.Atbash.Dictionary
             Map(lowerCase, lowerCase.Backwards().ToList(), LetterTypeEnum.LOWERCASE);
         }
 
-        private void Map(List<char> from, List<char> to, LetterTypeEnum type)
+        private void Map(IEnumerable<char> from, IEnumerable<char> to, LetterTypeEnum type)
         {
-            if(from.Count - to.Count != 0)
+            if(from.Count() - to.Count() != 0)
             {
                 throw new ArgumentException("Length of lists must match");
             }
@@ -39,11 +39,11 @@ namespace Cipher.Ciphers.Atbash.Dictionary
             }
         }
 
-        private void AddToMap(Dictionary<char, char> container, List<char> keys, List<char> values)
+        private void AddToMap(IDictionary<char, char> container, IEnumerable<char> keys, IEnumerable<char> values)
         {
-            for(int i = 0; i < keys.Count; ++i)
+            for(int i = 0; i < keys.Count(); ++i)
             {
-                container.Add(keys[i], values[i]);
+                container.Add(keys.ElementAt(i), values.ElementAt(i));
             }
         }
 

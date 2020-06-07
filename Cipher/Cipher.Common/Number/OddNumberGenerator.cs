@@ -1,6 +1,6 @@
 ﻿namespace Cipher.Common.Number
 {
-    public class OddNumberGenerator
+    public class OddNumberGenerator: IOddNumberGenerator
     {
         private int GetAdditionalFactor(int from, int to) => from % 2 == 0 & to % 2 == 0 ? 0 : 1;
 
